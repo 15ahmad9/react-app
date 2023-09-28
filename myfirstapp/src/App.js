@@ -2,6 +2,8 @@ import logo from './logo.svg';
 import './App.css';
 import Header from './components/Header';
 import Main from './components/Main';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Products from './components/products';
 
 function App() {
   return (
@@ -22,8 +24,15 @@ function App() {
     //   </header>
     // </div>
     <>
-    <Header/>
-    <Main/>
+      <Header />
+      <Router>
+        <Routes>
+          <Route path="/" Component={Main} ></Route>
+          <Route path="/products" Component={Products} ></Route>
+        </Routes>
+      </Router>
+
+
     </>
   );
 }
