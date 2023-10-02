@@ -3,7 +3,7 @@ import Card from 'react-bootstrap/Card';
 import data from '../data.json';
 import CardComp from './card';
 import Form from 'react-bootstrap/Form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 
 function Main() {
@@ -27,11 +27,38 @@ function Main() {
     //     );
 
 
-    let [ items, setItems ] = useState(data);
+    let [items, setItems] = useState(data);
 
-    function handleSubmit(event) {
+    async function getMealsData() {
+
+        const url = 'https://www.themealdb.com/api/json/v1/1/search.php?f=b';
+
+        const response = await fetch(url);
+        const data = await response.json();
+        console.log(data.results)
+        setItems(data.results) //all the data that comes from the api
+
+    }
+
+
+    useEffect(function () {
+
+        getMealsData();
+
+    }, [])
+
+
+
+    async function handleSubmit(event) {
         event.preventDefault()
         let searchedValue = event.target.search.value;
+
+        const url = 'https://www.themealdb.com/api/json/v1/1/search.php?f=b';
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+
         let filteredItems = data.filter(function (item) { return item.title.toLowerCase().includes(searchedValue.toLowerCase()) })
         setItems(filteredItems);
     }
@@ -46,22 +73,22 @@ function Main() {
                     className="me-2"
                     aria-label="Search"
                     name="search"
+                    required
                 />
                 <Button variant="outline-success" type='submit'>Search</Button>
             </Form>
-
-            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "20px", marginTop: "3%" }}>
-                {items.map(function (item) {
+            <div className="container" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "20px", marginTop: "3%" }}>
+                {items.length !== 0 ? items.map(function (item) {
                     return (
-                        <CardComp image={item.image_url} title={item.title} description={item.description} category={item.category} />
+                        <>
+                            <CardComp image={item.images[0].baseUrl} title={item.name} price={item.price.value} />
+                        </>
                     )
                 }
-                )
-                }
+                ) : <h3>No search results</h3>}
             </div>
         </>
     )
-
 }
 
 export default Main;
