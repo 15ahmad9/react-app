@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import './App.css';
 import Header from './components/Header';
 import Main from './components/Main';
+import Category from './components/Category';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Products from './components/products';
 
@@ -28,7 +29,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" Component={Main} ></Route>
-          <Route path="/products" Component={Products} ></Route>
+          <Route path="/Category" Component={Category} ></Route>
         </Routes>
       </Router>
 

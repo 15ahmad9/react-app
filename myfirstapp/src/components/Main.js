@@ -3,92 +3,147 @@ import Card from 'react-bootstrap/Card';
 import data from '../data.json';
 import CardComp from './card';
 import Form from 'react-bootstrap/Form';
+import Modal from 'react-bootstrap/Modal';
 import { useEffect, useState } from 'react';
 
 
 function Main() {
 
-    //     return (
-    // <>
-    // {data.map(
-    //         <Card style={{ width: '18rem' }}>
-    //             <Card.Img variant="top" src={data[0].image_url} />
-    //             <Card.Body>
-    //                 <Card.Title>{data[0].title}</Card.Title>
-    //                 <Card.Text>
-    //                     {data[0].description}
-    //                 </Card.Text>
-    //                 <Button variant="primary">Go somewhere</Button>
-    //             </Card.Body>
-    //         </Card>
-    // )
-    // }
-    //         </>
-    //     );
+  let arr = JSON.parse(localStorage.getItem("collections"));
+  const [items, setItems] = useState([]);
+  const [activeModalIndex, setActive] = useState(null);
+  const [activeModal2Index, setActive2] = useState(null);
+  const initialCategory = arr && arr[0] ? arr[0].collectionName : "";
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
 
 
-    let [items, setItems] = useState(data);
+  async function getMealsData() {
 
-    async function getMealsData() {
+    const url = 'https://www.themealdb.com/api/json/v1/1/search.php?f=b';
 
-        const url = 'https://www.themealdb.com/api/json/v1/1/search.php?f=b';
+    const response = await fetch(url);
+    console.log(response);
+    const data = await response.json();
+    console.log(data)
+    setItems(data.meals);
+  }
 
-        const response = await fetch(url);
-        const data = await response.json();
-        console.log(data.results)
-        setItems(data.results) //all the data that comes from the api
+  useEffect(() => {
+    getMealsData();
+  }, []);
 
-    }
+  async function handleSubmit(event) {
+    event.preventDefault();
+    let search = event.target.search.value;
+    console.log(search);
+
+    const url = (`https://www.themealdb.com/api/json/v1/1/search.php?s=${search}`);
+
+    const response = await fetch(url);
+    console.log(response);
+    const data = await response.json();
+    console.log(data)
+    setItems(data.meals);
+  }
+
+  function handleChange(event) {
+    console.log(event.target);
+    let category = event.target.value;
+    setSelectedCategory(category);
+  }
 
 
-    useEffect(function () {
+  return (
+    <>
+      <Form inline onSubmit={handleSubmit} style={{ marginTop: "5%", marginLeft: "25%", marginBottom: "5%" }}>
+        <div className="input-group">
+          <Form.Control type="text" placeholder="Search" className="mr-sm-2" name="search" style={{ width: "600px", marginRight: "20px" }} />
+          <div className="input-group-append">
+            <Button type="submit" variant="outline-success"> Search </Button>
+          </div>
+        </div>
+      </Form>
 
-        getMealsData();
+      <ul style={{ display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "space-between"}}>
+        {items.map((search, index) => (
+          <div >
+            <Card style={{ width: '280px' }} key={index}>
+              <Card.Img variant="top" src={search.strMealThumb} />
+              <Card.Body>
+                <Card.Title>{search.strMeal}</Card.Title>
+                <Button variant="primary" onClick={() =>
+                  setActive(index)} style={{ display: "flex" }}>
+                  Show Description
+                </Button>
+                <Button variant="primary" onClick={() =>
+                  setActive2(index)}>Add to List</Button>
+              </Card.Body>
+            </Card>
 
-    }, [])
+            <Modal
+              show={activeModalIndex === index}
+              onHide={() => setActive(null)}
+              aria-labelledby={`contained-modal-title-vcenter-${index}`}
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title id={`contained-modal-title-vcenter-${index}`}>
+                  {search.strMeal}
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <h4>Centered Modal</h4>
+                <p>{search.strInstructions}</p>
+              </Modal.Body>0
+              <Modal.Footer>
+                <Button onClick={() =>
+                  setActive(null)}>Close</Button>
+              </Modal.Footer>
+            </Modal>
 
+            <Modal
+              show={activeModal2Index === index}
+              onHide={() =>
+                setActive2(null)}
+              aria-labelledby={`contained-modal-title-vcenter-${index}`}
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title id={`contained-modal-title-vcenter-${index}`}>
+                  Categories
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <Form.Select
+                  aria-label="Default select example"
+                  name="area"
+                  onChange={(event) =>
+                    handleChange(event)}
+                >
+                  {arr ? (
+                    arr.map((category, i) => (
+                      <option key={i} value={category.collectionName}>
+                        {category.collectionName}
+                      </option>
+                    ))
+                  ) : (
+                    <p>There are no categories.</p>
+                  )}
+                </Form.Select>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button onClick={() =>
+                  setActive2(null)}>Close
+                  </Button>
+              </Modal.Footer>
+            </Modal>
+          </div>
+        )
+        )}
+      </ul>
 
-
-    async function handleSubmit(event) {
-        event.preventDefault()
-        let searchedValue = event.target.search.value;
-
-        const url = 'https://www.themealdb.com/api/json/v1/1/search.php?f=b';
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-
-        let filteredItems = data.filter(function (item) { return item.title.toLowerCase().includes(searchedValue.toLowerCase()) })
-        setItems(filteredItems);
-    }
-
-    return (
-        <>
-
-            <Form onSubmit={handleSubmit}>
-                <Form.Control
-                    type="search"
-                    placeholder="Search"
-                    className="me-2"
-                    aria-label="Search"
-                    name="search"
-                    required
-                />
-                <Button variant="outline-success" type='submit'>Search</Button>
-            </Form>
-            <div className="container" style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: "20px", marginTop: "3%" }}>
-                {items.length !== 0 ? items.map(function (item) {
-                    return (
-                        <>
-                            <CardComp image={item.images[0].baseUrl} title={item.name} price={item.price.value} />
-                        </>
-                    )
-                }
-                ) : <h3>No search results</h3>}
-            </div>
-        </>
-    )
+    </>
+  );
 }
 
 export default Main;
