@@ -2,10 +2,16 @@ import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import LoginButton from '../login';
+import { useAuth0 } from '@auth0/auth0-react';
+import LogoutButton from '../logout';
 
-function Header(){
-    return(
-       <Navbar expand="lg" className="bg-body-tertiary">
+function Header() {
+  let { isAuthenticated, user } = useAuth0()
+  console.log(user);
+
+  return (
+    <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
         <Navbar.Brand href="/">Food Recipes</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
@@ -26,10 +32,15 @@ function Header(){
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>
+        {isAuthenticated ?
+          <>
+            <img src={user.picture} style={{width: "35px", height: "35px", margin: "0 10px 0 10px" }} />
+            <h4 style={{margin:"0 30px 0 5px"}}>{user.name}</h4> <LogoutButton /> </> : <LoginButton />}
+
       </Container>
     </Navbar>
 
-    )
+  )
 }
 
 export default Header;
